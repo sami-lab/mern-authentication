@@ -12,6 +12,7 @@ import axios from "../src/utils/axios";
 import Loading from "../src/reusable/loading";
 import createEmotionCache from "../src/createEmotionCache";
 import { jwtKey } from "../src/data/websiteInfo";
+import "../src/i18n";
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();

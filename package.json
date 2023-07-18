@@ -19,10 +19,12 @@
     "@next/font": "latest",
     "@react-oauth/google": "^0.11.0",
     "axios": "^1.4.0",
+    "i18next-browser-languagedetector": "^7.1.0",
     "next": "latest",
     "prop-types": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "react-i18next": "^13.0.2",
     "react-tsparticles": "^2.11.0",
     "tsparticles": "^2.11.0"
   },

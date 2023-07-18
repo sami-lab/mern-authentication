@@ -1,12 +1,8 @@
 import React from "react";
 import TextField from "@mui/material/TextField";
 
-const CustomTextField = ({
-  type = "text",
-  placeholder = "",
-  value,
-  onChange,
-}) => {
+const CustomTextField = (props) => {
+  const { type = "text", placeholder = "", value, onChange } = props;
   return (
     <TextField
       fullWidth
@@ -39,6 +35,7 @@ const CustomTextField = ({
           borderRadius: "none !important",
         },
       }}
+      {...props}
     />
   );
 };

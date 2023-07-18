@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-
+import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import { useTranslation } from "react-i18next";
 
 import { GlobalContext } from "../../context/GlobalContext";
@@ -35,6 +35,11 @@ export default function Login() {
     message: "",
   });
   const [user, setUser] = useState({
+    name: {
+      value: "",
+      error: false,
+      errorMessage: "",
+    },
     email: {
       value: "",
       error: false,
@@ -53,6 +58,17 @@ export default function Login() {
       status: false,
       message: "",
     });
+    if (user.name.value === "") {
+      setUser({
+        ...user,
+        name: {
+          value: user.name.value,
+          error: true,
+          errorMessage: "Name cannot be empty",
+        },
+      });
+      return;
+    }
     if (user.email.value === "") {
       setUser({
         ...user,
@@ -92,7 +108,8 @@ export default function Login() {
     }
     try {
       setLoading(true);
-      const result = await axios.post("/users/login", {
+      const result = await axios.post("/users/signup", {
+        name: user.name.value,
         email: user.email.value,
         password: user.password.value,
       });
@@ -161,8 +178,48 @@ export default function Login() {
             align='center'
             sx={{ fontWeight: "bold" }}
           >
-            {t("signin.identify")}
+            {t("signup.heading")}
           </Typography>
+          {/* name */}
+          <>
+            <Box
+              display='flex'
+              alignItems='center'
+              sx={{
+                backgroundColor: (theme) => theme.palette.primary.main,
+                padding: "4px",
+                margin: "8px 0px",
+              }}
+            >
+              <Person2OutlinedIcon sx={{ margin: "6px" }} />
+              <CustomTextField
+                type='email'
+                placeholder={t("signup.namePlaceholder")}
+                value={user.name.value}
+                onChange={(e) =>
+                  setUser({
+                    ...user,
+                    name: {
+                      value: e.target.value,
+                      error: false,
+                      errorMessage: "",
+                    },
+                  })
+                }
+              />
+            </Box>
+            {user.name.error && (
+              <Typography
+                variant='body2'
+                sx={{
+                  fontSize: "12px",
+                  color: (theme) => theme.palette.common.white,
+                }}
+              >
+                {user.name.errorMessage}
+              </Typography>
+            )}
+          </>
           {/* email */}
           <>
             <Box
@@ -177,7 +234,7 @@ export default function Login() {
               <EmailOutlinedIcon sx={{ margin: "6px" }} />
               <CustomTextField
                 type='email'
-                placeholder={t("signin.emailPlaceholder")}
+                placeholder={t("signup.emailPlaceholder")}
                 value={user.email.value}
                 onChange={(e) =>
                   setUser({
@@ -218,7 +275,7 @@ export default function Login() {
               <LockOutlinedIcon sx={{ margin: "6px" }} />
               <CustomTextField
                 type='password'
-                placeholder={t("signin.passwordPlaceholder")}
+                placeholder={t("signup.passwordPlaceholder")}
                 value={user.password.value}
                 onChange={(e) =>
                   setUser({
@@ -249,27 +306,7 @@ export default function Login() {
               <Alert severity='warning'>{error.message}</Alert>
             </Grid>
           )}
-          {/* Forget passowrd */}
-          <Box
-            display='flex'
-            alignItems='center'
-            justifyContent='center'
-            sx={{ mt: "20px" }}
-          >
-            <Link href='/forget-password' style={{ textDecoration: "none" }}>
-              <Typography
-                variant='body1'
-                sx={{
-                  color: (theme) => theme.palette.common.white,
-                  "&:hover": {
-                    color: (theme) => theme.palette.common.red,
-                  },
-                }}
-              >
-                {t("signin.forgetPassword")}
-              </Typography>
-            </Link>
-          </Box>
+
           {/* submit */}
           <Box
             display='flex'
@@ -302,14 +339,14 @@ export default function Login() {
               disabled={loading}
               onClick={SubmitHandler}
             >
-              {t("signin.unlock")}
+              {t("signup.signup")}
             </Button>
           </Box>
         </Grid>
 
         {/* sign up */}
         <Grid item sx={{ mt: "40px", mb: "60px" }}>
-          <Link href='/signup' style={{ textDecoration: "none" }}>
+          <Link href='/login' style={{ textDecoration: "none" }}>
             <Button
               variant='contained'
               sx={{
@@ -319,7 +356,7 @@ export default function Login() {
                 color: "#aeaeae",
               }}
             >
-              {t("signin.newProfile")}
+              {t("signup.already")}
             </Button>
           </Link>
         </Grid>

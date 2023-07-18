@@ -19,7 +19,6 @@ import { GlobalContext } from "../../context/GlobalContext";
 import CustomTextField from "../../reusable/customTextfield";
 import Logo from "../../reusable/logo";
 import axios from "../../utils/axios";
-import { jwtKey } from "../../data/websiteInfo";
 export default function Login() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -35,12 +34,12 @@ export default function Login() {
     message: "",
   });
   const [user, setUser] = useState({
-    email: {
+    password: {
       value: "",
       error: false,
       errorMessage: "",
     },
-    password: {
+    confirmPassword: {
       value: "",
       error: false,
       errorMessage: "",
@@ -53,54 +52,47 @@ export default function Login() {
       status: false,
       message: "",
     });
-    if (user.email.value === "") {
-      setUser({
-        ...user,
-        email: {
-          value: user.email.value,
-          error: true,
-          errorMessage: "Email cannot be empty",
-        },
-      });
-      return;
-    }
-    if (
-      !/(?:[a-z0-9!#$%&'*/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/.test(
-        user.email.value
-      )
-    ) {
-      setUser({
-        ...user,
-        email: {
-          value: user.email.value,
-          error: true,
-          errorMessage: "Invalid Email",
-        },
-      });
-      return;
-    }
     if (user.password.value === "") {
       setUser({
         ...user,
         password: {
           value: user.password.value,
           error: true,
-          errorMessage: "Password cannot be empty",
+          errorMessage: t("resetPassword.emptyPassword"),
         },
       });
       return;
     }
+    if (user.confirmPassword.value === "") {
+      setUser({
+        ...user,
+        confirmPassword: {
+          value: user.confirmPassword.value,
+          error: true,
+          errorMessage: t("resetPassword.emptyPassword"),
+        },
+      });
+      return;
+    }
+    if (user.password.value !== user.confirmPassword.value) {
+      setError({
+        status: true,
+        message: t("resetPassword.passwordMatch"),
+      });
+      return;
+    }
+
     try {
       setLoading(true);
-      const result = await axios.post("/users/login", {
-        email: user.email.value,
-        password: user.password.value,
-      });
+      const result = await axios.post(
+        `/users/resetPassword/${router.query.token}`,
+        {
+          password: user.password.value,
+        }
+      );
 
       if (result.data.success) {
-        await localStorage.setItem(jwtKey, result.data.token);
-        setAuth({ ...result.data.data.user, token: result.data.token });
-        router.push("/");
+        router.push("/login");
       } else {
         setError({
           status: true,
@@ -131,7 +123,7 @@ export default function Login() {
         item
         sx={{
           flex: 1,
-          width: { lg: "30%", md: "50%", sm: "70%", xs: "90%" },
+          width: { lg: "40%", md: "50%", sm: "70%", xs: "90%" },
           zIndex: 1,
           height: "100%",
           display: "flex",
@@ -161,48 +153,9 @@ export default function Login() {
             align='center'
             sx={{ fontWeight: "bold" }}
           >
-            {t("signin.identify")}
+            {t("resetPassword.heading")}
           </Typography>
-          {/* email */}
-          <>
-            <Box
-              display='flex'
-              alignItems='center'
-              sx={{
-                backgroundColor: (theme) => theme.palette.primary.main,
-                padding: "4px",
-                margin: "8px 0px",
-              }}
-            >
-              <EmailOutlinedIcon sx={{ margin: "6px" }} />
-              <CustomTextField
-                type='email'
-                placeholder={t("signin.emailPlaceholder")}
-                value={user.email.value}
-                onChange={(e) =>
-                  setUser({
-                    ...user,
-                    email: {
-                      value: e.target.value,
-                      error: false,
-                      errorMessage: "",
-                    },
-                  })
-                }
-              />
-            </Box>
-            {user.email.error && (
-              <Typography
-                variant='body2'
-                sx={{
-                  fontSize: "12px",
-                  color: (theme) => theme.palette.common.white,
-                }}
-              >
-                {user.email.errorMessage}
-              </Typography>
-            )}
-          </>
+
           {/* password */}
           <>
             <Box
@@ -218,7 +171,7 @@ export default function Login() {
               <LockOutlinedIcon sx={{ margin: "6px" }} />
               <CustomTextField
                 type='password'
-                placeholder={t("signin.passwordPlaceholder")}
+                placeholder={t("resetPassword.newPasswordPlaceholder")}
                 value={user.password.value}
                 onChange={(e) =>
                   setUser({
@@ -244,32 +197,53 @@ export default function Login() {
               </Typography>
             )}
           </>
+          {/* confirm password */}
+          <>
+            <Box
+              display='flex'
+              alignItems='center'
+              sx={{
+                backgroundColor: (theme) => theme.palette.primary.main,
+
+                padding: "4px",
+                margin: "8px 0px",
+              }}
+            >
+              <LockOutlinedIcon sx={{ margin: "6px" }} />
+              <CustomTextField
+                type='password'
+                placeholder={t("resetPassword.confirmPasswordPlaceholder")}
+                value={user.confirmPassword.value}
+                onChange={(e) =>
+                  setUser({
+                    ...user,
+                    confirmPassword: {
+                      value: e.target.value,
+                      error: false,
+                      errorMessage: "",
+                    },
+                  })
+                }
+              />
+            </Box>
+            {user.confirmPassword.error && (
+              <Typography
+                variant='body2'
+                sx={{
+                  fontSize: "12px",
+                  color: (theme) => theme.palette.common.white,
+                }}
+              >
+                {user.confirmPassword.errorMessage}
+              </Typography>
+            )}
+          </>
           {error.status && (
             <Grid item style={{ marginTop: "1em", width: "100%" }}>
               <Alert severity='warning'>{error.message}</Alert>
             </Grid>
           )}
-          {/* Forget passowrd */}
-          <Box
-            display='flex'
-            alignItems='center'
-            justifyContent='center'
-            sx={{ mt: "20px" }}
-          >
-            <Link href='/forget-password' style={{ textDecoration: "none" }}>
-              <Typography
-                variant='body1'
-                sx={{
-                  color: (theme) => theme.palette.common.white,
-                  "&:hover": {
-                    color: (theme) => theme.palette.common.red,
-                  },
-                }}
-              >
-                {t("signin.forgetPassword")}
-              </Typography>
-            </Link>
-          </Box>
+
           {/* submit */}
           <Box
             display='flex'
@@ -302,26 +276,9 @@ export default function Login() {
               disabled={loading}
               onClick={SubmitHandler}
             >
-              {t("signin.unlock")}
+              {t("resetPassword.button")}
             </Button>
           </Box>
-        </Grid>
-
-        {/* sign up */}
-        <Grid item sx={{ mt: "40px", mb: "60px" }}>
-          <Link href='/signup' style={{ textDecoration: "none" }}>
-            <Button
-              variant='contained'
-              sx={{
-                backgroundColor: (theme) => theme.palette.common.darkGrey,
-                p: "6px 36px",
-                borderRadius: 0,
-                color: "#aeaeae",
-              }}
-            >
-              {t("signin.newProfile")}
-            </Button>
-          </Link>
         </Grid>
       </Grid>
 

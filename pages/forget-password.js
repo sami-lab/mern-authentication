@@ -1,11 +1,11 @@
 import * as React from "react";
-import Login from "../src/components/login";
+import ForgetPassword from "../src/components/forgetPassword";
 import Particles from "../src/reusable/particles";
-export default function LoginPage() {
+export default function SignUpPage() {
   return (
     <>
       <Particles />
-      <Login />
+      <ForgetPassword />
     </>
   );
 }

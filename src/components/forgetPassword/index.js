@@ -19,7 +19,6 @@ import { GlobalContext } from "../../context/GlobalContext";
 import CustomTextField from "../../reusable/customTextfield";
 import Logo from "../../reusable/logo";
 import axios from "../../utils/axios";
-import { jwtKey } from "../../data/websiteInfo";
 export default function Login() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -40,12 +39,8 @@ export default function Login() {
       error: false,
       errorMessage: "",
     },
-    password: {
-      value: "",
-      error: false,
-      errorMessage: "",
-    },
   });
+  const [foretPasswordSuccess, setForgetPasswordSuccess] = useState(false);
 
   const SubmitHandler = async (e) => {
     e.preventDefault();
@@ -53,6 +48,7 @@ export default function Login() {
       status: false,
       message: "",
     });
+    setForgetPasswordSuccess(false);
     if (user.email.value === "") {
       setUser({
         ...user,
@@ -79,28 +75,15 @@ export default function Login() {
       });
       return;
     }
-    if (user.password.value === "") {
-      setUser({
-        ...user,
-        password: {
-          value: user.password.value,
-          error: true,
-          errorMessage: "Password cannot be empty",
-        },
-      });
-      return;
-    }
+
     try {
       setLoading(true);
-      const result = await axios.post("/users/login", {
+      const result = await axios.post("/users/forgetpassword", {
         email: user.email.value,
-        password: user.password.value,
       });
 
       if (result.data.success) {
-        await localStorage.setItem(jwtKey, result.data.token);
-        setAuth({ ...result.data.data.user, token: result.data.token });
-        router.push("/");
+        setForgetPasswordSuccess(true);
       } else {
         setError({
           status: true,
@@ -161,7 +144,7 @@ export default function Login() {
             align='center'
             sx={{ fontWeight: "bold" }}
           >
-            {t("signin.identify")}
+            {t("forgetPassword.heading")}
           </Typography>
           {/* email */}
           <>
@@ -177,7 +160,7 @@ export default function Login() {
               <EmailOutlinedIcon sx={{ margin: "6px" }} />
               <CustomTextField
                 type='email'
-                placeholder={t("signin.emailPlaceholder")}
+                placeholder={t("forgetPassword.emailPlaceholder")}
                 value={user.email.value}
                 onChange={(e) =>
                   setUser({
@@ -203,73 +186,17 @@ export default function Login() {
               </Typography>
             )}
           </>
-          {/* password */}
-          <>
-            <Box
-              display='flex'
-              alignItems='center'
-              sx={{
-                backgroundColor: (theme) => theme.palette.primary.main,
-
-                padding: "4px",
-                margin: "8px 0px",
-              }}
-            >
-              <LockOutlinedIcon sx={{ margin: "6px" }} />
-              <CustomTextField
-                type='password'
-                placeholder={t("signin.passwordPlaceholder")}
-                value={user.password.value}
-                onChange={(e) =>
-                  setUser({
-                    ...user,
-                    password: {
-                      value: e.target.value,
-                      error: false,
-                      errorMessage: "",
-                    },
-                  })
-                }
-              />
-            </Box>
-            {user.password.error && (
-              <Typography
-                variant='body2'
-                sx={{
-                  fontSize: "12px",
-                  color: (theme) => theme.palette.common.white,
-                }}
-              >
-                {user.password.errorMessage}
-              </Typography>
-            )}
-          </>
+          {foretPasswordSuccess && (
+            <Grid item style={{ marginTop: "1em", width: "100%" }}>
+              <Alert severity='success'>{t("forgetPassword.success")}</Alert>
+            </Grid>
+          )}
           {error.status && (
             <Grid item style={{ marginTop: "1em", width: "100%" }}>
               <Alert severity='warning'>{error.message}</Alert>
             </Grid>
           )}
-          {/* Forget passowrd */}
-          <Box
-            display='flex'
-            alignItems='center'
-            justifyContent='center'
-            sx={{ mt: "20px" }}
-          >
-            <Link href='/forget-password' style={{ textDecoration: "none" }}>
-              <Typography
-                variant='body1'
-                sx={{
-                  color: (theme) => theme.palette.common.white,
-                  "&:hover": {
-                    color: (theme) => theme.palette.common.red,
-                  },
-                }}
-              >
-                {t("signin.forgetPassword")}
-              </Typography>
-            </Link>
-          </Box>
+
           {/* submit */}
           <Box
             display='flex'
@@ -302,12 +229,12 @@ export default function Login() {
               disabled={loading}
               onClick={SubmitHandler}
             >
-              {t("signin.unlock")}
+              {t("forgetPassword.send")}
             </Button>
           </Box>
         </Grid>
 
-        {/* sign up */}
+        {/* login */}
         <Grid item sx={{ mt: "40px", mb: "60px" }}>
           <Link href='/signup' style={{ textDecoration: "none" }}>
             <Button
@@ -319,7 +246,7 @@ export default function Login() {
                 color: "#aeaeae",
               }}
             >
-              {t("signin.newProfile")}
+              {t("forgetPassword.login")}
             </Button>
           </Link>
         </Grid>
